@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TheWeatherStationAPI.Models;
+using WebApi.Data;
 
 namespace TheWeatherStationAPI.Controllers
 {
@@ -11,29 +13,41 @@ namespace TheWeatherStationAPI.Controllers
     [Route("[controller]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
+        private MemoryRepository _repository;
 
-        private readonly ILogger<WeatherForecastController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController()
         {
-            _logger = logger;
+            _repository = MemoryRepository.GetInstance();
         }
 
+
+        // GET:
         [HttpGet]
-        public IEnumerable<WeatherForecast> Get()
+        public ActionResult<List<TemperatureReading>> Get()
         {
-            var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            return _repository.TemperatureReadings;
+        }
+
+        // POST:
+        [HttpPost]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(201)]
+        public ActionResult<TemperatureReading> Post(TemperatureReading temperature)
+        {
+            if (temperature == null)
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
-            })
-            .ToArray();
+                return BadRequest();
+            }
+            var newTemp = _repository.AddTemperatureReading(new TemperatureReading()
+            {
+                DateTime = temperature.DateTime,
+                Temperature = temperature.Temperature,
+                Humidity = temperature.Humidity,
+                AirPressure = temperature.AirPressure,
+            });
+
+            return CreatedAtAction("Get", new { id = newTemp.TemperatureReadingId }, newTemp);
         }
     }
 }
