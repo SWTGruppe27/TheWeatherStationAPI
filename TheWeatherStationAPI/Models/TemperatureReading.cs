@@ -10,19 +10,10 @@ namespace TheWeatherStationAPI.Models
     {
         public long TemperatureReadingId { get; set; }
 
-        public DateTime DateTime
-        {
-            get
-            {
-                return DateTime;
-            }
-            set
-            {
-                DateTime = DateTime.Now;
-            }
-        }
+        public string Date { get; set; }
+        public string Time { get; set; }
         public double Temperature { get; set; }
-        public int Humidity { get; set; }
-        public int AirPressure { get; set; }
+        public double Humidity { get; set; }
+        public double AirPressure { get; set; }
     }
 }

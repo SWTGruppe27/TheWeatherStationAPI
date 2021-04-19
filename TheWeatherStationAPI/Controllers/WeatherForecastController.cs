@@ -29,6 +29,40 @@ namespace TheWeatherStationAPI.Controllers
             return _repository.TemperatureReadings;
         }
 
+        // GET:
+        [HttpGet]
+        [Route("GetLastTemp")]
+        public ActionResult<TemperatureReading> GetLatestTemp()
+        {
+            return _repository.TemperatureReadings.ElementAt(_repository.TemperatureReadings.Count-1);
+        }
+
+
+        // GET:
+        [HttpGet("{Date}", Name = "GetTemp")]
+        //[Route("GetTempByDate")]
+        public ActionResult<List<TemperatureReading>> GetTempByDate(string date)
+        {
+            List<TemperatureReading> item = new List<TemperatureReading>();
+
+            foreach (var temperatureReadings in _repository.TemperatureReadings)
+            {
+                if (temperatureReadings.Date == date)
+                {
+                    item.Add(temperatureReadings);
+                }
+            }
+
+            if (item.Count == 0)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return item;
+            }
+        }
+
         // POST:
         [HttpPost]
         [ProducesResponseType(400)]
@@ -41,7 +75,8 @@ namespace TheWeatherStationAPI.Controllers
             }
             var newTemp = _repository.AddTemperatureReading(new TemperatureReading()
             {
-                DateTime = temperature.DateTime,
+                Date = temperature.Date,
+                Time = temperature.Time,
                 Temperature = temperature.Temperature,
                 Humidity = temperature.Humidity,
                 AirPressure = temperature.AirPressure,
