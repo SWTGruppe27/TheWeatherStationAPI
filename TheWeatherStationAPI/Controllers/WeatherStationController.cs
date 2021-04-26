@@ -11,12 +11,12 @@ namespace TheWeatherStationAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    public class WeatherStationController : ControllerBase
     {
         private MemoryRepository _repository;
 
 
-        public WeatherForecastController()
+        public WeatherStationController()
         {
             _repository = MemoryRepository.GetInstance();
         }
@@ -24,7 +24,7 @@ namespace TheWeatherStationAPI.Controllers
 
         // GET:
         [HttpGet]
-        public ActionResult<List<TemperatureReading>> Get()
+        public ActionResult<List<WeatherObservation>> Get()
         {
             return _repository.TemperatureReadings;
         }
@@ -32,7 +32,7 @@ namespace TheWeatherStationAPI.Controllers
         // GET:
         [HttpGet]
         [Route("GetLastTemp")]
-        public ActionResult<TemperatureReading> GetLatestTemp()
+        public ActionResult<WeatherObservation> GetLatestTemp()
         {
             return _repository.TemperatureReadings.ElementAt(_repository.TemperatureReadings.Count-1);
         }
@@ -41,9 +41,9 @@ namespace TheWeatherStationAPI.Controllers
         // GET:
         [HttpGet("{Date}", Name = "GetTemp")]
         //[Route("GetTempByDate")]
-        public ActionResult<List<TemperatureReading>> GetTempByDate(string date)
+        public ActionResult<List<WeatherObservation>> GetTempByDate(string date)
         {
-            List<TemperatureReading> item = new List<TemperatureReading>();
+            List<WeatherObservation> item = new List<WeatherObservation>();
 
             foreach (var temperatureReadings in _repository.TemperatureReadings)
             {
@@ -67,13 +67,13 @@ namespace TheWeatherStationAPI.Controllers
         [HttpPost]
         [ProducesResponseType(400)]
         [ProducesResponseType(201)]
-        public ActionResult<TemperatureReading> Post(TemperatureReading temperature)
+        public ActionResult<WeatherObservation> Post(WeatherObservation temperature)
         {
             if (temperature == null)
             {
                 return BadRequest();
             }
-            var newTemp = _repository.AddTemperatureReading(new TemperatureReading()
+            var newTemp = _repository.AddTemperatureReading(new WeatherObservation()
             {
                 Date = temperature.Date,
                 Time = temperature.Time,

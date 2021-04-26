@@ -6,7 +6,7 @@ using Microsoft.VisualBasic;
 
 namespace TheWeatherStationAPI.Models
 {
-    public class TemperatureReading
+    public class WeatherObservation
     {
         public long TemperatureReadingId { get; set; }
 
