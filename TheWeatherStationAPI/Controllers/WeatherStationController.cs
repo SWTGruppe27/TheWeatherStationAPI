@@ -24,6 +24,7 @@ namespace TheWeatherStationAPI.Controllers
 
         // GET:
         [HttpGet]
+        [Route("GetLastThreeTemps")]
         public async Task<ActionResult<List<WeatherObservation>>> GetLastThreeTemps()
         {
             var list = await _context.WeatherObservations.OrderByDescending(w => w.Date).ToListAsync();
@@ -54,7 +55,7 @@ namespace TheWeatherStationAPI.Controllers
         }
 
         //GET:
-        [HttpGet("{Date}", Name = "GetTempByStartAndEndTime")]
+        [HttpGet("{startTime}/{endTime}", Name = "GetTempByStartAndEndTime")]
         //[Route("GetTempByDate")]
         public async Task<ActionResult<List<WeatherObservation>>> GetTempByStartAndEndTime(DateTime startTime, DateTime endTime)
         {
