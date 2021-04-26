@@ -4,8 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using TheWeatherStationAPI.Data;
 using TheWeatherStationAPI.Models;
-using WebApi.Data;
 
 namespace TheWeatherStationAPI.Controllers
 {
@@ -13,53 +14,59 @@ namespace TheWeatherStationAPI.Controllers
     [Route("[controller]")]
     public class WeatherStationController : ControllerBase
     {
-        private MemoryRepository _repository;
+        private ApiDbContext _context;
 
-
-        public WeatherStationController()
+        public WeatherStationController(ApiDbContext context)
         {
-            _repository = MemoryRepository.GetInstance();
+            _context = context;
         }
 
 
         // GET:
         [HttpGet]
-        public ActionResult<List<WeatherObservation>> Get()
+        public async Task<ActionResult<List<WeatherObservation>>> GetLastThreeTemps()
         {
-            return _repository.TemperatureReadings;
+            var list = await _context.WeatherObservations.OrderByDescending(w => w.Date).ToListAsync();
+
+            List<WeatherObservation> listWithLastThreeTemps = new List<WeatherObservation>();
+            listWithLastThreeTemps.Add(list.ElementAt(0));
+            listWithLastThreeTemps.Add(list.ElementAt(1));
+            listWithLastThreeTemps.Add(list.ElementAt(2));
+
+            return listWithLastThreeTemps;
         }
 
         // GET:
-        [HttpGet]
-        [Route("GetLastTemp")]
-        public ActionResult<WeatherObservation> GetLatestTemp()
-        {
-            return _repository.TemperatureReadings.ElementAt(_repository.TemperatureReadings.Count-1);
-        }
-
-
-        // GET:
-        [HttpGet("{Date}", Name = "GetTemp")]
+        [HttpGet("{Date}", Name = "GetTempByDate")]
         //[Route("GetTempByDate")]
-        public ActionResult<List<WeatherObservation>> GetTempByDate(string date)
+        public async Task<ActionResult<List<WeatherObservation>>> GetTempByDate(string date)
         {
-            List<WeatherObservation> item = new List<WeatherObservation>();
+            var list = await _context.WeatherObservations.Where(d => d.Date.ToString("d") == date).ToListAsync();
 
-            foreach (var temperatureReadings in _repository.TemperatureReadings)
-            {
-                if (temperatureReadings.Date == date)
-                {
-                    item.Add(temperatureReadings);
-                }
-            }
-
-            if (item.Count == 0)
+            if (list.Count == 0)
             {
                 return NotFound();
             }
             else
             {
-                return item;
+                return list;
+            }
+        }
+
+        //GET:
+        [HttpGet("{Date}", Name = "GetTempByStartAndEndTime")]
+        //[Route("GetTempByDate")]
+        public async Task<ActionResult<List<WeatherObservation>>> GetTempByStartAndEndTime(DateTime startTime, DateTime endTime)
+        {
+            var list = await _context.WeatherObservations.Where(d => d.Date >= startTime && d.Date <= endTime).ToListAsync();
+
+            if (list.Count == 0)
+            {
+                return NotFound();
+            }
+            else
+            {
+                return list;
             }
         }
 
@@ -73,16 +80,19 @@ namespace TheWeatherStationAPI.Controllers
             {
                 return BadRequest();
             }
-            var newTemp = _repository.AddTemperatureReading(new WeatherObservation()
+            var newTemp = (new WeatherObservation()
             {
                 Date = temperature.Date,
-                Time = temperature.Time,
+                Station = temperature.Station,
                 Temperature = temperature.Temperature,
                 Humidity = temperature.Humidity,
                 AirPressure = temperature.AirPressure,
             });
 
-            return CreatedAtAction("Get", new { id = newTemp.TemperatureReadingId }, newTemp);
+            _context.Add(newTemp);
+            _context.SaveChanges();
+
+            return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.TemperatureReadingId }, newTemp);
         }
     }
 }
