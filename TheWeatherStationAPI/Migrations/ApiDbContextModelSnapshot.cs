@@ -35,16 +35,22 @@ namespace TheWeatherStationAPI.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("WeatherObservationId")
+                        .HasColumnType("int");
+
                     b.HasKey("StationId");
+
+                    b.HasIndex("WeatherObservationId")
+                        .IsUnique();
 
                     b.ToTable("Station");
                 });
 
             modelBuilder.Entity("TheWeatherStationAPI.Models.WeatherObservation", b =>
                 {
-                    b.Property<long>("TemperatureReadingId")
+                    b.Property<int>("WeatherObservationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint")
+                        .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<double>("AirPressure")
@@ -56,25 +62,27 @@ namespace TheWeatherStationAPI.Migrations
                     b.Property<int>("Humidity")
                         .HasColumnType("int");
 
-                    b.Property<int?>("StationId")
-                        .HasColumnType("int");
-
                     b.Property<double>("Temperature")
                         .HasColumnType("float");
 
-                    b.HasKey("TemperatureReadingId");
-
-                    b.HasIndex("StationId");
+                    b.HasKey("WeatherObservationId");
 
                     b.ToTable("WeatherObservations");
                 });
 
+            modelBuilder.Entity("TheWeatherStationAPI.Models.Station", b =>
+                {
+                    b.HasOne("TheWeatherStationAPI.Models.WeatherObservation", "WeatherObservation")
+                        .WithOne("Station")
+                        .HasForeignKey("TheWeatherStationAPI.Models.Station", "WeatherObservationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("WeatherObservation");
+                });
+
             modelBuilder.Entity("TheWeatherStationAPI.Models.WeatherObservation", b =>
                 {
-                    b.HasOne("TheWeatherStationAPI.Models.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("StationId");
-
                     b.Navigation("Station");
                 });
 #pragma warning restore 612, 618

@@ -84,7 +84,12 @@ namespace TheWeatherStationAPI.Controllers
             var newTemp = (new WeatherObservation()
             {
                 Date = temperature.Date,
-                Station = temperature.Station,
+                Station = new Station()
+                {
+                    Name = temperature.Station.Name,
+                    Lat = temperature.Station.Lat,
+                    Lon = temperature.Station.Lon
+                },
                 Temperature = temperature.Temperature,
                 Humidity = temperature.Humidity,
                 AirPressure = temperature.AirPressure,
@@ -93,7 +98,7 @@ namespace TheWeatherStationAPI.Controllers
             _context.Add(newTemp);
             _context.SaveChanges();
 
-            return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.TemperatureReadingId }, newTemp);
+            return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.WeatherObservationId }, newTemp);
         }
     }
 }
