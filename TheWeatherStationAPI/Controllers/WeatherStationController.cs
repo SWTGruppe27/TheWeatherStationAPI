@@ -45,11 +45,11 @@ namespace TheWeatherStationAPI.Controllers
         }
 
         // GET:
-        [HttpGet("{Date}", Name = "GetTempByDate")]
+        [HttpGet("GetTempByDate/{Date}", Name = "GetTempByDate")]
         //[Route("GetTempByDate")]
-        public async Task<ActionResult<List<WeatherObservation>>> GetTempByDate(string date)
+        public async Task<ActionResult<List<WeatherObservation>>> GetTempByDate(DateTime date)
         {
-            var list = await _context.WeatherObservations.Where(d => d.Date.ToString("d") == date).ToListAsync();
+            var list = await _context.WeatherObservations.Where(d => d.Date.ToString("d") == date.ToString("d")).ToListAsync();
 
             if (list.Count == 0)
             {
@@ -97,15 +97,31 @@ namespace TheWeatherStationAPI.Controllers
                     Lat = temperature.Station.Lat,
                     Lon = temperature.Station.Lon
                 },
-                Temperature = temperature.Temperature,
-                Humidity = temperature.Humidity,
-                AirPressure = temperature.AirPressure,
+                Temperature = Math.Round(temperature.Temperature, 1),
+                Humidity = CheckHumidity(temperature.Humidity),
+                AirPressure = Math.Round(temperature.AirPressure,1),
             });
 
             _context.Add(newTemp);
             _context.SaveChanges();
 
             return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.WeatherObservationId }, newTemp);
+        }
+
+        private int CheckHumidity(int humidity)
+        {
+            if (humidity <0)
+            {
+                return 0;
+            }
+            else if (humidity > 100)
+            {
+                return 100;
+            }
+            else
+            {
+                return humidity;
+            }
         }
     }
 }
