@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TheWeatherStationAPI.Data;
 
 namespace TheWeatherStationAPI.Migrations
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210503114925_UserAdded")]
+    partial class UserAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -43,7 +45,7 @@ namespace TheWeatherStationAPI.Migrations
                     b.HasIndex("WeatherObservationId")
                         .IsUnique();
 
-                    b.ToTable("Stations");
+                    b.ToTable("Station");
                 });
 
             modelBuilder.Entity("TheWeatherStationAPI.Models.User", b =>

@@ -4,13 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using TheWeatherStationAPI.Data;
 using TheWeatherStationAPI.Models;
 
 namespace TheWeatherStationAPI.Controllers
 {
-    [ApiController]
+    [ApiController, Authorize]
     [Route("[controller]")]
     public class WeatherStationController : ControllerBase
     {
@@ -21,13 +22,19 @@ namespace TheWeatherStationAPI.Controllers
             _context = context;
         }
 
-
         // GET:
         [HttpGet]
         [Route("GetLastThreeTemps")]
         public async Task<ActionResult<List<WeatherObservation>>> GetLastThreeTemps()
         {
-            var list = await _context.WeatherObservations.OrderByDescending(w => w.Date).ToListAsync();
+            var list = await _context.WeatherObservations
+                .Include(w => w.Station)
+                .OrderByDescending(w => w.Date).ToListAsync();
+
+            if (list.Count < 3)
+            {
+                return NotFound();
+            }
 
             List<WeatherObservation> listWithLastThreeTemps = new List<WeatherObservation>();
             listWithLastThreeTemps.Add(list.ElementAt(0));
