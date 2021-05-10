@@ -11,7 +11,8 @@ using TheWeatherStationAPI.Models;
 
 namespace TheWeatherStationAPI.Controllers
 {
-    [ApiController, Authorize]
+    //[ApiController, Authorize]
+    [ApiController]
     [Route("[controller]")]
     public class WeatherStationController : ControllerBase
     {
@@ -23,8 +24,8 @@ namespace TheWeatherStationAPI.Controllers
         }
 
         // GET:
-        [HttpGet]
-        [Route("GetLastThreeTemps")]
+        [HttpGet("GetLastThreeTemps")]
+        //[Route("GetLastThreeTemps")]
         public async Task<ActionResult<List<WeatherObservation>>> GetLastThreeTemps()
         {
             var list = await _context.WeatherObservations
@@ -45,11 +46,21 @@ namespace TheWeatherStationAPI.Controllers
         }
 
         // GET:
-        [HttpGet("GetTempByDate/{Date}", Name = "GetTempByDate")]
+        [HttpGet("GetTempByDate/{date}")]
         //[Route("GetTempByDate")]
-        public async Task<ActionResult<List<WeatherObservation>>> GetTempByDate(DateTime date)
+        public async Task<ActionResult<List<WeatherObservation>>> GetTempByDate(DateTime? date)
         {
-            var list = await _context.WeatherObservations.Where(d => d.Date.ToString("d") == date.ToString("d")).ToListAsync();
+
+            if (date == null)
+            {
+                return NotFound();
+            }
+
+            DateTime temp = (DateTime)date;
+
+            var list = await _context.WeatherObservations.Where(d => d.Date.Date == temp.Date)
+                .Include(s => s.Station)
+                .ToListAsync();
 
             if (list.Count == 0)
             {
@@ -62,11 +73,21 @@ namespace TheWeatherStationAPI.Controllers
         }
 
         //GET:
-        [HttpGet("{startTime}/{endTime}", Name = "GetTempByStartAndEndTime")]
+        [HttpGet("GetTempByStartAndEndTime/{startTime}/{endTime}")]
         //[Route("GetTempByDate")]
-        public async Task<ActionResult<List<WeatherObservation>>> GetTempByStartAndEndTime(DateTime startTime, DateTime endTime)
+        public async Task<ActionResult<List<WeatherObservation>>> GetTempByStartAndEndTime(DateTime? startTime, DateTime? endTime)
         {
-            var list = await _context.WeatherObservations.Where(d => d.Date >= startTime && d.Date <= endTime).ToListAsync();
+            if (startTime == null || endTime == null)
+            {
+                return NotFound();
+            }
+
+            DateTime sTime = (DateTime) startTime;
+            DateTime eTime = (DateTime) endTime;
+
+            var list = await _context.WeatherObservations.Where(d => d.Date.Date >= sTime.Date && d.Date.Date <= eTime.Date)
+                .Include(s=>s.Station)
+                .ToListAsync();
 
             if (list.Count == 0)
             {
@@ -99,7 +120,7 @@ namespace TheWeatherStationAPI.Controllers
                 },
                 Temperature = Math.Round(temperature.Temperature, 1),
                 Humidity = CheckHumidity(temperature.Humidity),
-                AirPressure = Math.Round(temperature.AirPressure,1),
+                AirPressure = Math.Round(temperature.AirPressure, 1),
             });
 
             _context.Add(newTemp);
@@ -110,7 +131,7 @@ namespace TheWeatherStationAPI.Controllers
 
         private int CheckHumidity(int humidity)
         {
-            if (humidity <0)
+            if (humidity < 0)
             {
                 return 0;
             }
