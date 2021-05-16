@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using TheWeatherStationAPI.Controllers;
@@ -62,9 +63,8 @@ namespace WeatherStationAPI.Test.Unit
         }
 
         [Fact]
-        public async void WeatherStationController_GetLastThreeTemps_Not()
+        public async void WeatherStationController_GetLastThreeTemps_ReturnsNotFound()
         {
-
             _context.Database.EnsureCreated();
 
             List<WeatherObservation> weatherObservations = new List<WeatherObservation>();
@@ -87,7 +87,7 @@ namespace WeatherStationAPI.Test.Unit
 
             var list = await _uut.GetLastThreeTemps();
 
-            Assert.Equal(, list.Value.ElementAt(0).Temperature);
+            Assert.IsType<NotFoundResult>(list.Result);
 
             _context.Database.EnsureDeleted();
         }
