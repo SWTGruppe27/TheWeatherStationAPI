@@ -12,6 +12,8 @@ namespace TheWeatherStationAPI.Data
         public ApiDbContext(DbContextOptions<ApiDbContext> options) : base(options)
         { }
         public DbSet<WeatherObservation> WeatherObservations { get; set; }
+        public DbSet<Station> Stations { get; set; }
+        public DbSet<User> User { get; set; }
     }
 }
 
