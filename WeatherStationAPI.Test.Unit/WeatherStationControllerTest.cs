@@ -202,5 +202,46 @@ namespace WeatherStationAPI.Test.Unit
             _context.Database.EnsureDeleted();
         }
 
+
+        [Fact]
+        public async void WeatherStationController_Post()
+        {
+            _context.Database.EnsureCreated();
+
+            DateTime date1 = new DateTime(2021, 5, 15);
+
+            WeatherObservation wo1 = new WeatherObservation();
+            wo1.Temperature = 2;
+            wo1.Humidity = 50;
+            wo1.AirPressure = 30;
+            wo1.Date = date1;
+
+            wo1.Station = new Station();
+            wo1.Station.Name = "";
+            wo1.Station.Lat = 10;
+            wo1.Station.Lon = 10;
+
+            await _uut.Post(wo1);
+
+            var list = await _uut.GetTempByDate(date1);
+
+            Assert.Equal(2, list.Value.ElementAt(0).Temperature);
+
+            _context.Database.EnsureDeleted();
+        }
+
+
+        [Fact]
+        public async void WeatherStationController_Post_Null()
+        {
+            _context.Database.EnsureCreated();
+
+            var list = await _uut.Post(null);
+
+            Assert.IsType<BadRequestResult>(list.Result);
+
+            _context.Database.EnsureDeleted();
+        }
+
     }
 }

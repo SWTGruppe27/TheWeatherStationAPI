@@ -133,10 +133,13 @@ namespace TheWeatherStationAPI.Controllers
             _context.SaveChanges();
 
             string json = JsonSerializer.Serialize(temperature);
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", json);
-
-
-                return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.WeatherObservationId }, newTemp);
+            
+            if (_hubContext != null)
+            {
+                await _hubContext.Clients.All.SendAsync("ReceiveMessage", json);
+            }
+            
+            return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.WeatherObservationId }, newTemp);
         }
 
         private int CheckHumidity(int humidity)
