@@ -59,7 +59,7 @@ namespace TheWeatherStationAPI.Controllers
 
             if (date == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             DateTime temp = (DateTime)date;
@@ -85,7 +85,7 @@ namespace TheWeatherStationAPI.Controllers
         {
             if (startTime == null || endTime == null)
             {
-                return NotFound();
+                return BadRequest();
             }
 
             DateTime sTime = (DateTime) startTime;
