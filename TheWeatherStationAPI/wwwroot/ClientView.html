@@ -6,13 +6,13 @@
 </head>
 <body>
 <h1>Weahter Observations</h1>
+<p>Here the newest observations will be showed when they get uploaded.</p>
 <label>Temperature: </label>
 <p id="temperature"></p>
 
 <script src="https://unpkg.com/@microsoft/signalr@3.0.1/dist/browser/signalr.js" crossorigin="anonymous"></script>
 <script>
     var connection = new signalR.HubConnectionBuilder().withUrl("/LiveHub").build();
-    alert("wup wup");
 
     connection.on("ReceiveMessage",
         function(message) {
