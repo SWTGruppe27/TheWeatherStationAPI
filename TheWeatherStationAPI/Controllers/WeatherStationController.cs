@@ -5,22 +5,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+//using Newtonsoft.Json;
 using TheWeatherStationAPI.Data;
+using TheWeatherStationAPI.Hub;
 using TheWeatherStationAPI.Models;
+using System.Text.Json;
 
 namespace TheWeatherStationAPI.Controllers
 {
-    //[ApiController, Authorize]
-    [ApiController]
+    [ApiController, Authorize]
+    //[ApiController]
     [Route("[controller]")]
     public class WeatherStationController : ControllerBase
     {
         private ApiDbContext _context;
+        private IHubContext<LiveHub> _hubContext;
 
-        public WeatherStationController(ApiDbContext context)
+        public WeatherStationController(ApiDbContext context, IHubContext<LiveHub> hubContext)
         {
             _context = context;
+            _hubContext = hubContext;
         }
 
         // GET:
@@ -103,7 +109,7 @@ namespace TheWeatherStationAPI.Controllers
         [HttpPost]
         [ProducesResponseType(400)]
         [ProducesResponseType(201)]
-        public ActionResult<WeatherObservation> Post(WeatherObservation temperature)
+        public async Task<ActionResult<WeatherObservation>> Post(WeatherObservation temperature)
         {
             if (temperature == null)
             {
@@ -126,7 +132,11 @@ namespace TheWeatherStationAPI.Controllers
             _context.Add(newTemp);
             _context.SaveChanges();
 
-            return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.WeatherObservationId }, newTemp);
+            string json = JsonSerializer.Serialize(temperature);
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", json);
+
+
+                return CreatedAtAction("GetLastThreeTemps", new { id = newTemp.WeatherObservationId }, newTemp);
         }
 
         private int CheckHumidity(int humidity)

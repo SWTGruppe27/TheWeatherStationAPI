@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using TheWeatherStationAPI.Data;
+using TheWeatherStationAPI.Hub;
 using TheWeatherStationAPI.Utilities;
 
 namespace TheWeatherStationAPI
@@ -34,6 +35,7 @@ namespace TheWeatherStationAPI
         {
 
             services.AddControllers();
+            services.AddSignalR();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TheWeatherStationAPI", Version = "v1" });
@@ -111,9 +113,14 @@ namespace TheWeatherStationAPI
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.UseStaticFiles();
+
+            app.UseWebSockets(); //Must be before useEndpoints
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+                endpoints.MapHub<LiveHub>("/LiveHub");
             });
         }
     }
