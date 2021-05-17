@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using TheWeatherStationAPI.Controllers;
 using TheWeatherStationAPI.Data;
+using TheWeatherStationAPI.Hub;
 using TheWeatherStationAPI.Models;
 using Xunit;
 
@@ -25,7 +28,7 @@ namespace WeatherStationAPI.Test.Unit
 
             _context = new ApiDbContext(options);
 
-            _uut = new WeatherStationController(_context);
+            _uut = new WeatherStationController(_context,null);
         }
 
         [Fact]
@@ -96,12 +99,12 @@ namespace WeatherStationAPI.Test.Unit
         {
             var list = await _uut.GetTempByDate(null);
 
-            Assert.IsType<NotFoundResult>(list.Result);
+            Assert.IsType<BadRequestResult>(list.Result);
         }
 
 
         [Fact]
-        public async void WeatherStationController_GetTempByDate_FoundTemp()
+        public async void WeatherStationController_GetTempByDate_FoundObservation()
         {
             _context.Database.EnsureCreated();
 
@@ -152,7 +155,7 @@ namespace WeatherStationAPI.Test.Unit
 
             var list = await _uut.GetTempByStartAndEndTime(null,null);
 
-            Assert.IsType<NotFoundResult>(list.Result);
+            Assert.IsType<BadRequestResult>(list.Result);
 
             _context.Database.EnsureDeleted();
         }
